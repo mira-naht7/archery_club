@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/member_list.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>メンバーリスト</h1>
+        <table class="equipment-table">
+        <tbody>
+            {% for member in members %}
+            <tr data-id="{{ member.id }}">
+                <td>{{ member.name }}</td>
+                <td>
+                    <button class="btn btn-sm edit-btn">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+        <h2>新しいメンバーを追加する</h2>
+        <form method="POST" class="add-member-form">
+            {{ add_form.hidden_tag() }}
+            <div class="form-group">
+                {{ add_form.name.label(class="form-label") }}
+                {{ add_form.name(class="form-control") }}
+            </div>
+            {{ add_form.submit(class="btn btn-success") }}
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setupEventListeners();
+});
+
+function setupEventListeners() {
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.onclick = function() {
+            const memberId = this.closest('tr').dataset.id;
+            editMember(memberId);
+        };
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.onclick = function() {
+            const memberId = this.closest('tr').dataset.id;
+            deleteMember(memberId);
+        };
+    });
+}
+
+function editMember(memberId) {
+    const row = document.querySelector(`tr[data-id="${memberId}"]`);
+    const nameCell = row.querySelector('td:first-child');
+    const currentName = nameCell.textContent;
+    
+    // 編集フォームを作成
+    const form = document.createElement('form');
+    form.innerHTML = `
+        <input type="text" name="name" value="${currentName}" required>
+        <button type="submit">保存</button>
+        <button type="button" onclick="cancelEdit(${memberId})">キャンセル</button>
+    `;
+    
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        const newName = this.name.value;
+        fetch(`/edit_member/${memberId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: `name=${encodeURIComponent(newName)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                nameCell.textContent = newName;
+                cancelEdit(memberId);
+            } else {
+                alert('編集に失敗しました。');
+            }
+        });
+    };
+    
+    nameCell.innerHTML = '';
+    nameCell.appendChild(form);
+}
+
+function cancelEdit(memberId) {
+    const row = document.querySelector(`tr[data-id="${memberId}"]`);
+    const nameCell = row.querySelector('td:first-child');
+    const currentName = nameCell.querySelector('input').value;
+    nameCell.textContent = currentName;
+}
+
+function deleteMember(memberId) {
+    if (confirm('このメンバーを削除してもよろしいですか？')) {
+        fetch(`/delete_member/${memberId}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const row = document.querySelector(`tr[data-id="${memberId}"]`);
+                if (row) {
+                    row.remove();
+                    console.log('Member removed from DOM');
+                } else {
+                    console.log('Row not found in DOM');
+                }
+            } else {
+                alert('削除に失敗しました。');
+                console.error('Deletion failed:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('削除中にエラーが発生しました。');
+        });
+    }
+}
+</script>
+{% endblock %}

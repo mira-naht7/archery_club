@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiver Keeper - {% block title %}{% endblock %}</title>
+</head>
+<body>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block extra_styles %}{% endblock %}
+    <nav>
+        <a href="{{ url_for('index') }}" class="logo">Quiver Keeper</a>
+        <ul>
+            <li><a href="{{ url_for('index') }}">ホーム</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('equipment_list') }}">備品リスト</a></li>
+                <li><a href="{{ url_for('add_equipment') }}">備品追加</a></li>
+                <li><a href="{{ url_for('member_list') }}">メンバーリスト</a></li>
+                <li><a href="{{ url_for('add_member') }}">メンバー追加</a></li>
+                <li><a href="{{ url_for('logout') }}">ログアウト</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">ログイン</a></li>
+                <li><a href="{{ url_for('register') }}">登録</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

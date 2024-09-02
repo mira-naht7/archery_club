@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block extra_styles %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/equipment_list.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>備品リスト</h1>
+    
+    <form id="search-form">
+        <input type="text" id="search-input" placeholder="道具を探す">
+    </form>
+
+    <h2>弓</h2>
+    <div class="equipment-grid">
+        {% for bow in assembled_bows %}
+        <div class="equipment-item {% if bow.user %}in-use{% endif %}" data-id="{{ bow.id }}">
+            <img src="{{ url_for('static', filename='equipment_pics/' + bow.image_file) }}" alt="{{ bow.name }}" 
+                {% if bow.user %}style="filter: grayscale(100%);"{% endif %}>
+            <h3>{{ bow.name }}</h3>
+            {% if bow.user %}
+            <div class="user-tag">{{ bow.user.name }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <h2>ケース</h2>
+    <div class="equipment-grid">
+        {% for case in cases %}
+        <div class="equipment-item {% if case.user %}in-use{% endif %}" data-id="{{ case.id }}">
+        <img src="{{ url_for('static', filename='equipment_pics/' + case.image_file) }}" alt="{{ case.name }}" 
+                {% if case.user %}style="filter: grayscale(100%);"{% endif %}>
+            <h3>{{ case.name }}</h3>
+            {% if case.user %}
+            <div class="user-tag">{{ case.user.name }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <h2>矢</h2>
+    <div class="equipment-grid">
+        {% for arrow in arrows %}
+        <div class="equipment-item {% if arrow.user %}in-use{% endif %}" data-id="{{ arrow.id }}">
+        <img src="{{ url_for('static', filename='equipment_pics/' + arrow.image_file) }}" alt="{{ arrow.name }}" 
+                {% if arrow.user %}style="filter: grayscale(100%);"{% endif %}>
+            <h3>{{ arrow.name }}</h3>
+            {% if arrow.user %}
+            <div class="user-tag">{{ arrow.user.name }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <h2>パーツ</h2>
+    <table class="equipment-table">
+        <tr>
+            <th>Name</th>
+            <th>Condition</th>
+            <th>Owner</th>
+            <th>Actions</th>
+        </tr>
+        {% for item in parts %}
+        <tr class="{% if item.user %}equipment-row-in-use{% endif %}" data-id="{{ item.id }}">
+            <td>{{ item.name }}</td>
+            <td>{{ item.condition }}</td>
+            <td>
+            {% if item.user %}
+                <span class="owner-tag">{{ item.user.name }}</span>
+            {% else %}
+                なし
+            {% endif %}
+            </td>
+            <td>
+            <button>Edit</button>
+            <form action="{{ url_for('delete_equipment', equipment_id=item.id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>その他備品</h2>
+    <table class="equipment-table">
+        <tr>
+            <th>Name</th>
+            <th>Condition</th>
+            <th>Owner</th>
+            <th>Actions</th>
+        </tr>
+        {% for item in other_equipment %}
+        <tr class="{% if item.user %}equipment-row-in-use{% endif %}" data-id="{{ item.id }}">
+            <td>{{ item.name }}</td>
+            <td>{{ item.condition }}</td>
+            <td>
+            {% if item.user %}
+                <span class="owner-tag">{{ item.user.name }}</span>
+            {% else %}
+                なし
+            {% endif %}
+            </td>
+            <td>
+            <button>Edit</button>
+            <form action="{{ url_for('delete_equipment', equipment_id=item.id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" onclick="return confirm('Are you sure you want to delete this item?');">Delete</button>
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div id="equipment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title"></h2>
+            <form id="edit-equipment-form" method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.name.label }}
+                    {{ form.name(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.category.label }}
+                    {{ form.category(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.condition.label }}
+                    {{ form.condition(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.user.label }}
+                    {{ form.user(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.details.label }}
+                    {{ form.details(class="form-control") }}
+                </div>
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+            <form id="delete-equipment-form" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-danger">Delete Equipment</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('equipment-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const editForm = document.getElementById('edit-equipment-form');
+    const deleteForm = document.getElementById('delete-equipment-form');
+    const closeButton = document.getElementsByClassName('close')[0];
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const equipmentItems = document.querySelectorAll('.equipment-item, .equipment-table tr');
+
+    function openEditModal(equipmentId) {
+        fetch(`/api/equipment/${equipmentId}`)
+            .then(response => response.json())
+            .then(data => {
+                modalTitle.textContent = `Edit ${data.name}`;
+                editForm.action = `/edit_equipment/${data.id}`;
+                deleteForm.action = `/delete_equipment/${data.id}`;
+                
+                // フォームにデータを設定
+                editForm.querySelector('#name').value = data.name;
+                editForm.querySelector('#category').value = data.category;
+                editForm.querySelector('#condition').value = data.condition;
+                editForm.querySelector('#user').value = data.user_id || 0;
+                editForm.querySelector('#details').value = data.details || '';
+
+                modal.style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // 画像形式の機器（弓、矢、ケース）に対するイベントリスナー
+    document.querySelectorAll('.equipment-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            const equipmentId = this.getAttribute('data-id');
+            openEditModal(equipmentId);
+        });
+    });
+
+    // テーブル形式の機器（パーツ、その他備品）に対するイベントリスナー
+    document.querySelectorAll('.equipment-table button').forEach(button => {
+        if (button.textContent === 'Edit') {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const equipmentId = this.closest('tr').getAttribute('data-id');
+                openEditModal(equipmentId);
+            });
+        }
+    });
+
+    closeButton.onclick = function() {
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // 検索機能
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const searchTerm = searchInput.value.toLowerCase();
+
+        equipmentItems.forEach(item => {
+            const itemName = item.querySelector('h3') ? item.querySelector('h3').textContent.toLowerCase() :
+                            item.querySelector('td:first-child').textContent.toLowerCase();
+            if (itemName.includes(searchTerm)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // グレースケール効果
+    document.querySelectorAll('.equipment-item.in-use img').forEach(img => {
+        img.addEventListener('mouseover', function() {
+            this.style.filter = 'grayscale(0%)';
+        });
+        img.addEventListener('mouseout', function() {
+            this.style.filter = 'grayscale(100%)';
+        });
+    });
+});
+</script>
+{% endblock %}
