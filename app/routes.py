@@ -6,7 +6,6 @@ from app.forms import RegistrationForm, EquipmentForm, LoginForm, MemberForm, Ed
 from urllib.parse import urlparse
 import os
 import secrets
-from PIL import Image
 from flask import current_app
 
 
