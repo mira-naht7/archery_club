@@ -6,7 +6,7 @@ from app.models import Member
 import os
 from flask import current_app
 
-#登録/ログイン・アウト関連
+#登録フォーム
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -14,14 +14,14 @@ class RegistrationForm(FlaskForm):
         'Repeat Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
+#ログインフォーム
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Sign In')
 
-
-#備品関連
+#備品追加フォーム
 class EquipmentForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     category = SelectField('Category', choices=[
@@ -44,6 +44,7 @@ class EquipmentForm(FlaskForm):
         super(EquipmentForm, self).__init__(*args, **kwargs)
         self.user.choices = [(0, 'なし')] + [(m.id, m.name) for m in Member.query.all()]
 
+#備品編集フォーム
 class EditEquipmentForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     category = SelectField('Category', choices=[
@@ -67,19 +68,16 @@ class EditEquipmentForm(FlaskForm):
         super(EditEquipmentForm, self).__init__(*args, **kwargs)
         self.user.choices = [(0, 'なし')] + [(m.id, m.name) for m in Member.query.all()]
 
-#メンバー関連
+#メンバー追加フォーム
 class MemberForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     submit = SubmitField('メンバーの追加')
 
-    def validate_name(self, name):
-        member = Member.query.filter_by(name=name.data).first()
-        if member:
-            raise ValidationError('This name is already registered. Please use a different name.')
-
+#メンバー編集フォーム
 class EditMemberForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     submit = SubmitField('Update')
 
+#メンバー削除フォーム
 class DeleteMemberForm(FlaskForm):
     submit = SubmitField('Delete')

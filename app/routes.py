@@ -9,7 +9,7 @@ import secrets
 from flask import current_app
 
 
-
+#ホームページ
 def init_routes(app):
     @app.route('/')
     @app.route('/index')
@@ -17,7 +17,7 @@ def init_routes(app):
     def index():
         return render_template('index.html', title='Home')
 
-    #登録/ログイン・アウト関連
+    #ユーザー登録
     @app.route('/register', methods=['GET', 'POST'])
     def register():
         if current_user.is_authenticated:
@@ -32,6 +32,7 @@ def init_routes(app):
             return redirect(url_for('login'))
         return render_template('register.html', title='Register', form=form)
 
+    # ログイン
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if current_user.is_authenticated:
@@ -49,12 +50,13 @@ def init_routes(app):
             return redirect(next_page)
         return render_template('login.html', title='Sign In', form=form)
 
+    #ログアウト
     @app.route('/logout')
     def logout():
         logout_user()
         return redirect(url_for('index'))
 
-    #備品関連
+    #備品リスト
     @app.route("/equipment_list")
     @login_required
     def equipment_list():
@@ -84,6 +86,7 @@ def init_routes(app):
                             form=edit_form,
                             search=search)
         
+    #備品情報取得API
     @app.route('/api/equipment/<int:equipment_id>')
     @login_required
     def get_equipment(equipment_id):
@@ -97,6 +100,7 @@ def init_routes(app):
             'details': equipment.details,
         })
     
+    #備品追加
     @app.route("/add_equipment", methods=['GET', 'POST'])
     @login_required
     def add_equipment():
@@ -117,6 +121,7 @@ def init_routes(app):
             return redirect(url_for('equipment_list'))
         return render_template('add_equipment.html', title='Add Equipment', form=form)
     
+    #備品編集
     @app.route("/edit_equipment/<int:equipment_id>", methods=['GET', 'POST'])
     @login_required
     def edit_equipment(equipment_id):
@@ -134,6 +139,7 @@ def init_routes(app):
             return redirect(url_for('equipment_list'))
         return render_template('edit_equipment.html', title='Edit Equipment', form=form, equipment=equipment)
     
+    #備品削除
     @app.route("/delete_equipment/<int:equipment_id>", methods=['POST'])
     @login_required
     def delete_equipment(equipment_id):
@@ -143,8 +149,7 @@ def init_routes(app):
         flash('Equipment has been deleted!', 'success')
         return redirect(url_for('equipment_list'))
         
-        
-    #メンバー関連
+    #メンバー追加
     @app.route("/add_member", methods=['GET', 'POST'])
     @login_required
     def add_member():
@@ -157,6 +162,7 @@ def init_routes(app):
             return redirect(url_for('member_list'))
         return render_template('add_member.html', title='Add Member', form=form)
     
+    #メンバーリスト表示
     @app.route("/member_list", methods=['GET', 'POST'])
     @login_required
     def member_list():
@@ -175,6 +181,7 @@ def init_routes(app):
         return render_template('member_list.html', title='Member List', members=members,
                             add_form=add_form, edit_form=edit_form, delete_form=delete_form)
     
+    #メンバー編集
     @app.route("/edit_member/<int:member_id>", methods=['POST'])
     @login_required
     def edit_member(member_id):
@@ -188,6 +195,7 @@ def init_routes(app):
             flash('Failed to update member.', 'danger')
         return redirect(url_for('member_list'))
 
+    #メンバー削除
     @app.route("/delete_member/<int:member_id>", methods=['POST'])
     @login_required
     def delete_member(member_id):

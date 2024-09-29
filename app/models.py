@@ -2,6 +2,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login_manager
 
+#ユーザーモデル
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Text, index=True, unique=True) 
@@ -13,6 +14,7 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+#備品モデル
 class Equipment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -23,7 +25,7 @@ class Equipment(db.Model):
     quantity = db.Column(db.Integer, default=1)
     user = db.relationship('Member', backref='equipment', lazy=True)
 
-    @property
+    @property #備品の画像を返す
     def image_file(self):
         if self.category == 'assembled_bow':
             return 'default_bow.jpg'
@@ -32,7 +34,7 @@ class Equipment(db.Model):
         elif self.category == 'arrow':
             return 'default_arrow.jpg'
 
-
+#メンバーモデル
 class Member(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
@@ -40,6 +42,7 @@ class Member(db.Model):
     def __repr__(self):
         return f"Member('{self.name}')"
     
+#ユーザーロード
 @login_manager.user_loader
 def load_user(id):
     return User.query.get(int(id))
