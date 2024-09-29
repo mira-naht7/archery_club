@@ -8,14 +8,15 @@
 {% block content %}
 <div class="container">
     <h1>備品リスト</h1>
-    
     <form id="search-form">
         <input type="text" id="search-input" placeholder="道具を探す">
     </form>
 
+    <!-- 弓のセクション -->
     <h2>弓</h2>
     <div class="equipment-grid">
         {% for bow in assembled_bows %}
+        <!-- 各弓を表示 -->
         <div class="equipment-item {% if bow.user %}in-use{% endif %}" data-id="{{ bow.id }}">
             <img src="{{ url_for('static', filename='equipment_pics/' + bow.image_file) }}" alt="{{ bow.name }}" 
                 {% if bow.user %}style="filter: grayscale(100%);"{% endif %}>
@@ -27,9 +28,11 @@
         {% endfor %}
     </div>
 
+    <!-- ケースのセクション -->
     <h2>ケース</h2>
     <div class="equipment-grid">
         {% for case in cases %}
+        <!-- 各ケースを表示 -->
         <div class="equipment-item {% if case.user %}in-use{% endif %}" data-id="{{ case.id }}">
         <img src="{{ url_for('static', filename='equipment_pics/' + case.image_file) }}" alt="{{ case.name }}" 
                 {% if case.user %}style="filter: grayscale(100%);"{% endif %}>
@@ -44,6 +47,7 @@
     <h2>矢</h2>
     <div class="equipment-grid">
         {% for arrow in arrows %}
+        <!-- 各矢を表示 -->
         <div class="equipment-item {% if arrow.user %}in-use{% endif %}" data-id="{{ arrow.id }}">
         <img src="{{ url_for('static', filename='equipment_pics/' + arrow.image_file) }}" alt="{{ arrow.name }}" 
                 {% if arrow.user %}style="filter: grayscale(100%);"{% endif %}>
@@ -55,6 +59,7 @@
         {% endfor %}
     </div>
 
+    <!-- パーツと他の備品のセクション（テーブル形式） -->
     <h2>パーツ</h2>
     <table class="equipment-table">
         <tr>
@@ -115,10 +120,12 @@
         {% endfor %}
     </table>
 
+    <!-- 備品編集用モーダル -->
     <div id="equipment-modal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2 id="modal-title"></h2>
+            <!-- 備品編集フォーム -->
             <form id="edit-equipment-form" method="POST" enctype="multipart/form-data">
                 {{ form.hidden_tag() }}
                 <div class="form-group">
@@ -154,6 +161,7 @@
 {% block scripts %}
 {{ super() }}
 <script>
+//DOM要素の取得
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('equipment-modal');
     const modalTitle = document.getElementById('modal-title');
@@ -164,6 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search-input');
     const equipmentItems = document.querySelectorAll('.equipment-item, .equipment-table tr');
 
+    //モーダルを開く関数
     function openEditModal(equipmentId) {
         fetch(`/api/equipment/${equipmentId}`)
             .then(response => response.json())
@@ -213,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 検索機能
+    //検索機能
     searchForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const searchTerm = searchInput.value.toLowerCase();
@@ -229,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // グレースケール効果
+    //グレースケール
     document.querySelectorAll('.equipment-item.in-use img').forEach(img => {
         img.addEventListener('mouseover', function() {
             this.style.filter = 'grayscale(0%)';

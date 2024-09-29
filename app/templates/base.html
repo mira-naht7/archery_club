@@ -6,11 +6,15 @@
     <title>Quiver Keeper - {% block title %}{% endblock %}</title>
 </head>
 <body>
+    <!-- 基本的なスタイルシートの読み込み -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- 追加のスタイルを挿入するためのブロック -->
     {% block extra_styles %}{% endblock %}
     <nav>
+        <!-- ロゴ／ホームへのリンク -->
         <a href="{{ url_for('index') }}" class="logo">Quiver Keeper</a>
         <ul>
+            <!-- ナビゲーションメニュー -->
             <li><a href="{{ url_for('index') }}">ホーム</a></li>
             {% if current_user.is_authenticated %}
                 <li><a href="{{ url_for('equipment_list') }}">備品リスト</a></li>

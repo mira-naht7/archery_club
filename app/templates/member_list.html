@@ -36,11 +36,14 @@
 {% block scripts %}
 {{ super() }}
 <script>
+//DOMの読み込みが完了したら実行
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
 });
 
+//イベントリスナーのセットアップ
 function setupEventListeners() {
+     // 編集ボタンのイベントリスナー
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.onclick = function() {
             const memberId = this.closest('tr').dataset.id;
@@ -48,6 +51,7 @@ function setupEventListeners() {
         };
     });
 
+     // 削除ボタンのイベントリスナー
     document.querySelectorAll('.delete-btn').forEach(button => {
         button.onclick = function() {
             const memberId = this.closest('tr').dataset.id;
@@ -56,12 +60,13 @@ function setupEventListeners() {
     });
 }
 
+//メンバー編集関数
 function editMember(memberId) {
     const row = document.querySelector(`tr[data-id="${memberId}"]`);
     const nameCell = row.querySelector('td:first-child');
     const currentName = nameCell.textContent;
     
-    // 編集フォームを作成
+    //編集フォームを作成
     const form = document.createElement('form');
     form.innerHTML = `
         <input type="text" name="name" value="${currentName}" required>
@@ -69,6 +74,7 @@ function editMember(memberId) {
         <button type="button" onclick="cancelEdit(${memberId})">キャンセル</button>
     `;
     
+    //フォーム送信時の処理
     form.onsubmit = function(e) {
         e.preventDefault();
         const newName = this.name.value;
@@ -90,11 +96,12 @@ function editMember(memberId) {
             }
         });
     };
-    
+    //編集フォームを表示
     nameCell.innerHTML = '';
     nameCell.appendChild(form);
 }
 
+//編集キャンセル関数
 function cancelEdit(memberId) {
     const row = document.querySelector(`tr[data-id="${memberId}"]`);
     const nameCell = row.querySelector('td:first-child');
@@ -102,6 +109,7 @@ function cancelEdit(memberId) {
     nameCell.textContent = currentName;
 }
 
+//メンバー削除関数
 function deleteMember(memberId) {
     if (confirm('このメンバーを削除してもよろしいですか？')) {
         fetch(`/delete_member/${memberId}`, {
@@ -114,6 +122,7 @@ function deleteMember(memberId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                //DOMからメンバー行を削除
                 const row = document.querySelector(`tr[data-id="${memberId}"]`);
                 if (row) {
                     row.remove();

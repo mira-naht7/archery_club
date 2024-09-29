@@ -6,9 +6,12 @@
 {% block content %}
 <div class="container">
     <h1>備品を追加</h1>
+
+    <!-- 備品追加フォーム -->
     <form method="POST" enctype="multipart/form-data" class="equipment-form">
         {{ form.hidden_tag() }}
-        
+
+        <!-- 備品名入力フィールド -->
         <div class="form-group">
             {{ form.name.label(class="form-label") }}
             {{ form.name(class="form-control") }}
@@ -17,6 +20,7 @@
             {% endfor %}
         </div>
 
+        <!-- カテゴリ選択フィールド -->
         <div class="form-group">
             {{ form.category.label(class="form-label") }}
             {{ form.category(class="form-control") }}
@@ -25,6 +29,7 @@
             {% endfor %}
         </div>
 
+        <!-- 状態選択フィールド -->
         <div class="form-group">
             {{ form.condition.label(class="form-label") }}
             {{ form.condition(class="form-control") }}
@@ -33,6 +38,7 @@
             {% endfor %}
         </div>
 
+        <!-- ユーザー選択フィールド -->
         <div class="form-group">
             {{ form.user.label(class="form-label") }}
             {{ form.user(class="form-control") }}
@@ -41,6 +47,7 @@
             {% endfor %}
         </div>
 
+        <!-- 詳細情報入力フィールド -->
         <div class="form-group">
             {{ form.details.label(class="form-label") }}
             {{ form.details(class="form-control") }}
@@ -49,6 +56,7 @@
             {% endfor %}
         </div>
 
+        <!-- 数量入力フィールド -->
         <div class="form-group">
             {{ form.quantity.label(class="form-label") }}
             {{ form.quantity(class="form-control") }}
@@ -57,6 +65,7 @@
             {% endfor %}
         </div>
 
+        <!-- 送信ボタン -->
         <div class="form-group">
             {{ form.submit(class="btn btn-primary") }}
         </div>
